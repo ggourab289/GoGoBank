@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GogoBank - Account Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-full {
+            grid-column: 1 / -1;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .accounts-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .accounts-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .accounts-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .accounts-table thead {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .accounts-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .accounts-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .accounts-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .accounts-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .no-accounts {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-size: 1.1em;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            padding: 20px;
+        }
+
+        .account-id {
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 GogoBank</h1>
+            <p>Account Management System</p>
+        </div>
+
+        <div class="form-section">
+            <h2>Create New Account</h2>
+            <div id="message" class="message"></div>
+            <form id="accountForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="mobile">Mobile Number *</label>
+                        <input type="tel" id="mobile" name="mobile" required placeholder="Enter 10-digit mobile number">
+                    </div>
+                    <div class="form-group">
+                        <label for="pan">PAN *</label>
+                        <input type="text" id="pan" name="pan" required placeholder="Enter PAN number">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Enter email address">
+                    </div>
+                    <div class="form-group form-full">
+                        <label for="address">Address *</label>
+                        <input type="text" id="address" name="address" required placeholder="Enter your address">
+                    </div>
+                    <div class="form-group">
+                        <label for="balance">Initial Balance</label>
+                        <input type="number" id="balance" name="balance" placeholder="Enter initial balance" value="0" min="0">
+                    </div>
+                </div>
+                <button type="submit">Create Account</button>
+            </form>
+        </div>
+
+        <div class="accounts-section">
+            <h2>All Accounts</h2>
+            <div id="accountsContainer" class="loading">Loading accounts...</div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('accountForm');
+        const messageDiv = document.getElementById('message');
+        const accountsContainer = document.getElementById('accountsContainer');
+
+        // Load accounts on page load
+        loadAccounts();
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                name: document.getElementById('name').value,
+                mobile: document.getElementById('mobile').value,
+                pan: document.getElementById('pan').value,
+                email: document.getElementById('email').value,
+                address: document.getElementById('address').value,
+                balance: parseFloat(document.getElementById('balance').value) || 0
+            };
+
+            try {
+                const response = await fetch('/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(`✓ ${data.message} (Account ID: ${data.Data.account_id})`, 'success');
+                    form.reset();
+                    loadAccounts();
+                } else {
+                    showMessage(`✗ ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showMessage('✗ Error creating account. Please try again.', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Load and display all accounts
+        async function loadAccounts() {
+            try {
+                accountsContainer.innerHTML = '<div class="loading">Loading accounts...</div>';
+                
+                const response = await fetch('/all_accounts');
+                const data = await response.json();
+                displayAccountsTable(data.Data.accounts || []);
+            } catch (error) {
+                accountsContainer.innerHTML = '<div class="no-accounts">Error loading accounts</div>';
+                console.error('Error:', error);
+            }
+        }
+
+        function displayAccountsTable(accounts) {
+            if (!accounts || accounts.length === 0) {
+                accountsContainer.innerHTML = '<div class="no-accounts">No accounts yet. Create your first account above!</div>';
+                return;
+            }
+
+            let html = `
+                <table class="accounts-table">
+                    <thead>
+                        <tr>
+                            <th>Account ID</th>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>PAN</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            accounts.forEach(account => {
+                html += `
+                    <tr>
+                        <td class="account-id">${account.id || 'N/A'}</td>
+                        <td>${account.name || 'N/A'}</td>
+                        <td>${account.mobile || 'N/A'}</td>
+                        <td>${account.pan || 'N/A'}</td>
+                        <td>${account.email || 'N/A'}</td>
+                        <td>${account.address || 'N/A'}</td>
+                        <td>₹${account.balance || 0}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            accountsContainer.innerHTML = html;
+        }
+
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            setTimeout(() => {
+                messageDiv.className = 'message';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
